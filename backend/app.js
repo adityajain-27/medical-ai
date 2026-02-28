@@ -3,7 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
-
+import assessRoutes from "./routes/assess.js";
 
 dotenv.config();
 connectDB();
@@ -16,6 +16,7 @@ app.use(express.json());
 
 // middleware routes-
 app.use("/api/auth", authRoutes);
+app.use("/api/assess", assessRoutes);
 
 
 app.get("/", (req, res) => {
