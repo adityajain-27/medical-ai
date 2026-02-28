@@ -6,37 +6,50 @@ const assessmentSchema = new mongoose.Schema({
         ref: "User",
         required: true
     },
+    // Optional: set when assessment is run by a doctor for their managed patient
+    doctorPatientId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "DoctorPatient",
+        default: null,
+        index: true,
+    },
     symptoms: {
-        type: String,
-        required: true
-    },
-    medications: [String],
-    triage: {
-        color: String,
-        label: String
-    },
-    soapNote: {
-        subjective: String,
-        objective: String,
-        assessment: String,
-        plan: String
-    },
-    conditions: [
-        {
-            name: String,
-            probability: String,
-            icd_code: String
-        }
-    ],
-    drugInteractions: [
-        {
-            drug1: String,
-            drug2: String,
-            severity: String,
-            description: String
-        }
-    ],
-    redFlags: [String]
-}, { timestamps: true });
+        : String,
+    ired: true
 
-export default mongoose.model("Assessment", assessmentSchema);
+cations: [String],
+    ge: {
+    r: String,
+        ncy_score: Number,
+            l: String,
+                on: String
+
+    owupAnswers: {
+        : Object,
+            ult: { }
+
+        Note: {
+            ective: String,
+                ctive: String,
+                    ssment: String,
+        : String
+
+            itions: [
+        
+            : String,
+                ability: String,
+                code: String
+        
+    
+    Interactions: [
+
+                    1: String,
+                    2: String,
+                    rity: String,
+                    ription: String
+        
+    
+    lags: [String]
+ timestamps: true });
+
+        export default mongoose.model("Assessment", assessmentSchema);
