@@ -1,0 +1,18 @@
+# Ignore environment variables across all folders
+.env
+.env.*
+!.env.example
+
+# Ignore dependency folders
+node_modules/
+__pycache__/
+venv/
+env/
+.venv/
+
+# Ignored build outputs
+dist/
+build/
+.next/
+.vscode/
+.DS_Store
