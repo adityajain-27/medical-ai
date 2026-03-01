@@ -1,5 +1,5 @@
-const AI_BASE_URL = 'http://localhost:8000';
-const NODE_BASE_URL = 'http://localhost:5000';
+const AI_BASE_URL = import.meta.env.VITE_AI_URL || 'http://localhost:8000';
+const NODE_BASE_URL = import.meta.env.VITE_NODE_URL || 'http://localhost:5000';
 
 export interface AIResult {
     triage: {

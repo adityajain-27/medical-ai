@@ -14,7 +14,7 @@ import { Link } from 'react-router';
 import { useAuth } from '../hooks/useAuth';
 import { toast } from 'sonner';
 
-const NODE_BASE_URL = 'http://localhost:5000';
+const NODE_BASE_URL = import.meta.env.VITE_NODE_URL || 'http://localhost:5000';
 function authHeaders(token: string) {
   return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
 }

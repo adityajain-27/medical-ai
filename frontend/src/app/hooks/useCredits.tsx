@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { useAuth } from './useAuth';
 
-const NODE_BASE_URL = 'http://localhost:5000';
+const NODE_BASE_URL = import.meta.env.VITE_NODE_URL || 'http://localhost:5000';
 
 interface CreditContextType {
     credits: number | null;
