@@ -4,20 +4,22 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Activity } from 'lucide-react';
 import { toast } from 'sonner';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { useAuth } from '../hooks/useAuth';
+import { Loader2, Coins } from 'lucide-react';
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Go directly to symptom analysis after login
   const returnTo = location.state?.returnTo || '/patient/symptom';
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email || !password) {
@@ -25,10 +27,16 @@ export default function LoginPage() {
       return;
     }
 
-    toast.success('Login successful!');
-    setTimeout(() => {
+    setIsLoading(true);
+    try {
+      await login(email, password);
+      toast.success('Welcome back! You have 500 credits to get started.');
       navigate(returnTo);
-    }, 1000);
+    } catch (err: any) {
+      toast.error(err.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -49,13 +57,19 @@ export default function LoginPage() {
             </p>
           </CardHeader>
           <CardContent>
+            <div className="flex items-center gap-2 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 rounded-lg px-3 py-2 mb-5">
+              <Coins className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
+              <p className="text-xs text-teal-700 dark:text-teal-300">
+                New users get <strong>500 free credits</strong> — enough for 3 AI health reports
+              </p>
+            </div>
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="doctor@example.com"
+                  placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
@@ -87,9 +101,10 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 size="lg"
+                disabled={isLoading}
                 className="w-full bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600"
               >
-                Sign In
+                {isLoading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Signing in...</> : 'Sign In'}
               </Button>
             </form>
 

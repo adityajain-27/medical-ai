@@ -13,10 +13,13 @@ import { toast } from 'sonner';
 import BodyMap from '../components/BodyMap';
 import ImageUpload from '../components/ImageUpload';
 import { analyzeSymptoms } from '../services/api';
+import { useCredits } from '../hooks/useCredits';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { Coins } from 'lucide-react';
 
 export default function PatientSymptomInputPage() {
   const navigate = useNavigate();
+  const { credits } = useCredits();
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [gender, setGender] = useState('');
@@ -89,6 +92,13 @@ export default function PatientSymptomInputPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (credits !== null && credits < 150) {
+      toast.error('Not enough credits! You need 150 credits to generate a report.');
+      navigate('/buy-credits');
+      return;
+    }
+
     if (!symptoms.trim()) {
       toast.error('Please describe your symptoms');
       return;
@@ -128,6 +138,15 @@ export default function PatientSymptomInputPage() {
           </Link>
           <div className="flex items-center gap-4">
             <ThemeToggle />
+            {credits !== null && (
+              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${credits >= 150
+                ? 'bg-teal-50 dark:bg-teal-950/40 border-teal-200 dark:border-teal-800 text-teal-700 dark:text-teal-300'
+                : 'bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'
+                }`}>
+                <Coins className="w-3.5 h-3.5" />
+                {credits} cr &middot; {Math.floor(credits / 150)} report{Math.floor(credits / 150) !== 1 ? 's' : ''} left
+              </div>
+            )}
             <Link to="/">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="w-4 h-4 mr-2" />

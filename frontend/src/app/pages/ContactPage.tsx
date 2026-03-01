@@ -5,8 +5,31 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Mail, MessageSquare, MapPin, Send } from 'lucide-react';
+import { Mail, Send, Linkedin } from 'lucide-react';
 import { toast } from 'sonner';
+
+const teamMembers = [
+    {
+        name: "Aditya Jain",
+        email: "aditya.jain_cs.h25@gla.ac.in",
+        linkedin: "https://www.linkedin.com/in/aditya-jain-32b310371/",
+    },
+    {
+        name: "Sweety",
+        email: "sweety.sweety_cs.h25@gla.ac.in",
+        linkedin: "https://www.linkedin.com/in/sweety-527189382/",
+    },
+    {
+        name: "Samay Parashar",
+        email: "samay.parashar_cs.h25@gla.ac.in",
+        linkedin: "https://www.linkedin.com/in/samay-parashar-95833b382",
+    },
+    {
+        name: "Hardik Aggarwal",
+        email: "hardik.agrawal_cs.h25@gla.ac.in",
+        linkedin: "https://www.linkedin.com/in/hardik-agarwal-85a90a382",
+    }
+];
 
 export default function ContactPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -68,42 +91,31 @@ export default function ContactPage() {
                         transition={{ delay: 0.2 }}
                         className="md:col-span-1 space-y-6"
                     >
-                        <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
-                            <CardContent className="p-6 flex items-start gap-4">
-                                <div className="bg-teal-100 dark:bg-teal-900/40 p-3 rounded-xl text-teal-600 dark:text-teal-400">
-                                    <Mail className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-slate-900 dark:text-white">Email Us</h3>
-                                    <p className="text-slate-500 text-sm mt-1">support@nirog.ai</p>
-                                    <p className="text-slate-500 text-sm">sales@nirog.ai</p>
-                                </div>
-                            </CardContent>
-                        </Card>
+                        <div className="grid sm:grid-cols-2 gap-4">
+                            {teamMembers.map((member, i) => (
+                                <Card key={i} className="border-slate-200 dark:border-slate-800 shadow-sm hover:border-teal-300 dark:hover:border-teal-700 transition-colors">
+                                    <CardContent className="p-5">
+                                        <h3 className="font-bold text-slate-900 dark:text-white text-lg">{member.name}</h3>
+                                        <p className="text-teal-600 dark:text-teal-400 text-sm font-medium mb-4">Core Team</p>
 
-                        <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
-                            <CardContent className="p-6 flex items-start gap-4">
-                                <div className="bg-blue-100 dark:bg-blue-900/40 p-3 rounded-xl text-blue-600 dark:text-blue-400">
-                                    <MessageSquare className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-slate-900 dark:text-white">Live Chat</h3>
-                                    <p className="text-slate-500 text-sm mt-1">Available 24/7 on our dashboard for subscribed clinics.</p>
-                                </div>
-                            </CardContent>
-                        </Card>
-
-                        <Card className="border-slate-200 dark:border-slate-800 shadow-sm">
-                            <CardContent className="p-6 flex items-start gap-4">
-                                <div className="bg-indigo-100 dark:bg-indigo-900/40 p-3 rounded-xl text-indigo-600 dark:text-indigo-400">
-                                    <MapPin className="w-6 h-6" />
-                                </div>
-                                <div>
-                                    <h3 className="font-semibold text-slate-900 dark:text-white">Office</h3>
-                                    <p className="text-slate-500 text-sm mt-1">123 Health Tech Ave<br />Innovation District, CA 94103</p>
-                                </div>
-                            </CardContent>
-                        </Card>
+                                        <div className="space-y-3">
+                                            <a href={`mailto:${member.email}`} className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors group">
+                                                <div className="bg-slate-100 dark:bg-slate-800 p-1.5 rounded-md group-hover:bg-teal-50 dark:group-hover:bg-teal-900/30 transition-colors">
+                                                    <Mail className="w-4 h-4" />
+                                                </div>
+                                                <span className="truncate" title={member.email}>{member.email}</span>
+                                            </a>
+                                            <a href={member.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group">
+                                                <div className="bg-slate-100 dark:bg-slate-800 p-1.5 rounded-md group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 transition-colors">
+                                                    <Linkedin className="w-4 h-4" />
+                                                </div>
+                                                <span>LinkedIn Profile</span>
+                                            </a>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
                     </motion.div>
 
                     {/* Contact Form */}

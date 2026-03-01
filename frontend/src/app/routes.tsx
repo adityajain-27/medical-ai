@@ -1,5 +1,7 @@
-import { createBrowserRouter, Outlet, Navigate } from 'react-router';
+import { createBrowserRouter, Outlet, Navigate, useLocation } from 'react-router';
+import { AnimatePresence } from 'motion/react';
 import ChatbotWidget from './components/ChatbotWidget';
+import PageTransition from './components/PageTransition';
 
 import NewLandingPage from './pages/NewLandingPage';
 import LoginPage from './pages/LoginPage';
@@ -32,9 +34,14 @@ import PatientHistoryPage from './pages/PatientHistoryPage';
 import DrugCheckerPage from './pages/DrugCheckerPage';
 
 const RootLayout = () => {
+  const location = useLocation();
   return (
     <>
-      <Outlet />
+      <AnimatePresence mode="wait">
+        <PageTransition key={location.pathname}>
+          <Outlet />
+        </PageTransition>
+      </AnimatePresence>
       <ChatbotWidget />
     </>
   );

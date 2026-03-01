@@ -4,7 +4,7 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Coins } from 'lucide-react';
 import { toast } from 'sonner';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { useAuth } from '../hooks/useAuth';
@@ -43,7 +43,7 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await signup(name, email, password, 'patient');
-      toast.success('Account created! Taking you to AI analysis...');
+      toast.success('Account created! You have 500 free credits — enough for 3 AI reports.');
       navigate(returnTo);
     } catch (err: any) {
       toast.error(err.message || 'Registration failed. Please try again.');
@@ -70,6 +70,12 @@ export default function RegisterPage() {
             </p>
           </CardHeader>
           <CardContent>
+            <div className="flex items-center gap-2 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800 rounded-lg px-3 py-2 mb-4">
+              <Coins className="w-4 h-4 text-teal-600 dark:text-teal-400 shrink-0" />
+              <p className="text-xs text-teal-700 dark:text-teal-300">
+                You'll receive <strong>500 free credits</strong> — enough for 3 AI health reports
+              </p>
+            </div>
             <form onSubmit={handleRegister} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>

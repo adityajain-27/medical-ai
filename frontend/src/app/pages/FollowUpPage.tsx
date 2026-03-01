@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { motion, AnimatePresence } from 'motion/react';
 import { getFollowupQuestions, analyzeSymptoms } from '../services/api';
+import { useCredits } from '../hooks/useCredits';
 import { toast } from 'sonner';
 import { ThemeToggle } from '../components/ThemeToggle';
 
@@ -21,6 +22,7 @@ export default function FollowUpPage() {
     const location = useLocation();
     const navigate = useNavigate();
     const state = location.state as { symptoms: string; medications: string[]; age: string; gender: string } | null;
+    const { credits, deductCredits, isDoctor } = useCredits();
 
     const [questions, setQuestions] = useState<string[]>([]);
     const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -59,10 +61,27 @@ export default function FollowUpPage() {
 
     const startAnalysis = async (followupAnswers: Record<string, string>) => {
         if (!state) return;
+
+        // Credit gate: only for patients with known low balance
+        if (!isDoctor && credits !== null && credits < 150) {
+            toast.error('Not enough credits. Please buy more to generate a report.');
+            navigate('/buy-credits');
+            return;
+        }
+
         setPhase('analyzing');
         setStepIdx(0);
         try {
             const result = await analyzeSymptoms(state.symptoms, state.medications, followupAnswers);
+
+            // Deduct credits after successful analysis
+            const { success, insufficientCredits } = await deductCredits();
+            if (!success && insufficientCredits) {
+                toast.error('Not enough credits. Please buy more to generate a report.');
+                navigate('/buy-credits');
+                return;
+            }
+
             const sessionId = `session-${Date.now()}`;
             sessionStorage.setItem(sessionId, JSON.stringify({
                 result,
@@ -70,7 +89,7 @@ export default function FollowUpPage() {
                 age: state.age,
                 gender: state.gender,
             }));
-            toast.success('Analysis complete!');
+            toast.success('Analysis complete! 150 credits used.');
             navigate(`/patient/risk/${sessionId}`);
         } catch {
             toast.error('AI service error. Please ensure the Python server is running on port 8000.');

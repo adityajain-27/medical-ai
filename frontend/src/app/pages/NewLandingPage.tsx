@@ -1,17 +1,18 @@
 import { Link } from 'react-router';
+import { createPortal } from 'react-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
-import { Badge } from '../components/ui/badge';
+
 import { ThemeToggle } from '../components/ThemeToggle';
 import {
   Activity, Brain, FileText, AlertTriangle, Download,
-  BarChart3, Users, TrendingUp, Shield, Check, ArrowRight, Sparkles
+  BarChart3, Users, TrendingUp, ArrowRight
 } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'motion/react';
 import type { Variants } from 'motion/react';
 import { useRef, useEffect, useState } from 'react';
 import { subscriptionPlans } from '../data/mockData';
-import LiquidEther from '../components/LiquidEther';
+import LightRays from '../../components/LightRays';
 import ShapeBlur from '../components/ShapeBlur';
 
 function AnimatedCounter({ target, suffix = '' }: { target: number; suffix?: string }) {
@@ -53,10 +54,59 @@ const stagger = {
   show: { transition: { staggerChildren: 0.12 } },
 };
 
-const cardHover = {
-  rest: { scale: 1, y: 0, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' },
-  hover: { scale: 1.03, y: -6, boxShadow: '0 20px 40px rgba(0,0,0,0.12)', transition: { duration: 0.25 } },
+const wordStagger = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.09 } },
 };
+
+const wordFade = {
+  hidden: { opacity: 0, y: 28, filter: 'blur(6px)' },
+  show: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.55, ease: 'easeOut' as const } },
+};
+
+function FlowingHeadline({ text, className }: { text: string; className?: string }) {
+  return (
+    <motion.span variants={wordStagger} initial="hidden" animate="show" className={className}>
+      {text.split(' ').map((word, i) => (
+        <motion.span key={i} variants={wordFade} className="inline-block mr-[0.28em] last:mr-0">
+          {word}
+        </motion.span>
+      ))}
+    </motion.span>
+  );
+}
+
+const marqueeItems = [
+  '✦ HIPAA Compliant',
+  '✦ Evidence-Based',
+  '✦ Real-Time Analysis',
+  '✦ ICD-10 Coded',
+  '✦ SOAP Reports',
+  '✦ Drug Interaction Alerts',
+  '✦ Multi-Language Support',
+  '✦ 6 AI Pipeline Agents',
+];
+
+function Marquee() {
+  const items = [...marqueeItems, ...marqueeItems];
+  return (
+    <div className="mt-16 overflow-hidden relative">
+      <div className="absolute left-0 top-0 w-16 h-full bg-gradient-to-r from-white dark:from-transparent to-transparent z-10 pointer-events-none" />
+      <div className="absolute right-0 top-0 w-16 h-full bg-gradient-to-l from-white dark:from-transparent to-transparent z-10 pointer-events-none" />
+      <motion.div
+        className="flex gap-8 whitespace-nowrap"
+        animate={{ x: ['0%', '-50%'] }}
+        transition={{ duration: 22, ease: 'linear', repeat: Infinity }}
+      >
+        {items.map((item, i) => (
+          <span key={i} className="text-xs font-semibold tracking-widest uppercase text-slate-500 dark:text-slate-500 flex-shrink-0">
+            {item}
+          </span>
+        ))}
+      </motion.div>
+    </div>
+  );
+}
 
 export default function LandingPage() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -64,7 +114,7 @@ export default function LandingPage() {
   const heroY = useTransform(scrollYProgress, [0, 1], ['0%', '10%']);
 
   const patientFeatures = [
-    { icon: Brain, title: 'Free AI Risk Analysis', description: 'Advanced symptom analysis powered by Llama 3.3 AI', color: 'from-teal-400 to-emerald-500' },
+    { icon: Brain, title: 'AI Risk Analysis', description: 'Advanced symptom analysis powered by Llama 3.3 AI', color: 'from-teal-400 to-emerald-500' },
     { icon: FileText, title: 'Clinical SOAP Report', description: 'Doctor-standard medical documentation generated instantly', color: 'from-blue-400 to-cyan-500' },
     { icon: AlertTriangle, title: 'Emergency Red-Flag Detection', description: 'Instant identification of critical conditions', color: 'from-red-400 to-orange-500' },
     { icon: Download, title: 'Downloadable PDF', description: 'Share formatted clinical reports with your doctor', color: 'from-purple-400 to-pink-500' },
@@ -80,21 +130,26 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-transparent overflow-hidden relative">
 
-      {/* LiquidEther Background */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0 bg-slate-50 dark:bg-slate-950">
-        <LiquidEther
-          mouseForce={6}
-          cursorSize={70}
-          isViscous
-          viscous={30}
-          colors={["#f5f4fb", "#f6f4f6"]}
-          autoDemo
-          autoSpeed={0.3}
-          autoIntensity={1.7}
-          isBounce={false}
-          resolution={0.5}
-        />
-      </div>
+      {/* LightRays Background */}
+      {createPortal(
+        <div className="fixed inset-0 pointer-events-none overflow-hidden z-[-1] bg-white dark:bg-slate-950">
+          <LightRays
+            raysOrigin="top-center"
+            raysColor="#36f255"
+            raysSpeed={1}
+            lightSpread={0.5}
+            rayLength={3}
+            pulsating={false}
+            fadeDistance={1}
+            saturation={1}
+            followMouse
+            mouseInfluence={0.1}
+            noiseAmount={0}
+            distortion={0}
+          />
+        </div>,
+        document.body
+      )}
 
       {/* Header */}
       <motion.header
@@ -138,37 +193,42 @@ export default function LandingPage() {
         className="relative z-10 max-w-7xl mx-auto px-6 pt-32 pb-24 text-center"
       >
         <motion.div variants={stagger} initial="hidden" animate="show">
-          <motion.div variants={fadeUp}>
-            <Badge className="mb-6 bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800 px-4 py-1.5 text-sm">
-              <Sparkles className="w-3.5 h-3.5 mr-1.5 inline" />
-              Powered by Llama 3.3 AI
-            </Badge>
-          </motion.div>
 
-          <motion.h2
-            variants={fadeUp}
-            className="text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white mb-6 leading-[1.08] tracking-tight"
-          >
-            AI-Powered{' '}
-            <span className="bg-gradient-to-r from-teal-500 via-blue-500 to-indigo-500 bg-clip-text text-transparent">
-              Clinical Triage
-            </span>
-            <br />& Decision Support
-          </motion.h2>
+
+          <div className="mt-16 mb-6">
+            <h2
+              className="text-5xl md:text-7xl font-extrabold text-slate-900 dark:text-white leading-[1.12] tracking-tight"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              <FlowingHeadline text="Intelligent" />
+              {' '}
+              <FlowingHeadline
+                text="Clinical Triage."
+                className="text-teal-600 dark:text-teal-400"
+              />
+            </h2>
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1, duration: 0.6 }}
+              className="mt-4 text-sm md:text-base font-semibold tracking-[0.2em] uppercase text-slate-600 dark:text-slate-400"
+            >
+              Clinical AI for Patients &amp; Providers
+            </motion.p>
+          </div>
 
           <motion.p
             variants={fadeUp}
-            className="text-xl text-slate-600 dark:text-slate-400 mb-14 max-w-2xl mx-auto leading-relaxed"
+            className="text-lg text-slate-600 dark:text-slate-400 mb-14 max-w-2xl mx-auto leading-relaxed"
           >
-            Describe symptoms → AI generates triage priority, SOAP notes, ICD-10 codes,
-            and drug interaction warnings in seconds.
+            Describe your symptoms — get triage priority, SOAP notes, ICD-10 codes,
+            and drug interaction checks in seconds.
           </motion.p>
 
           {/* Single CTA Card */}
           <motion.div variants={fadeUp} className="max-w-xl mx-auto w-full">
-            <Card className="border-2 border-teal-200 dark:border-teal-800 shadow-xl shadow-teal-100 dark:shadow-teal-900/30 overflow-hidden relative group">
-              {/* Animated subtle background glow in the card */}
-              <div className="absolute inset-0 bg-gradient-to-br from-teal-50 to-blue-50 dark:from-teal-950/20 dark:to-blue-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+            <Card className="border border-teal-200/60 dark:border-teal-800 shadow-xl shadow-teal-100 dark:shadow-teal-900/30 overflow-hidden relative group bg-teal-50/60 dark:bg-slate-900/80 backdrop-blur-md">
+              <div className="absolute inset-0 bg-gradient-to-br from-teal-100/50 to-blue-100/50 dark:from-teal-950/20 dark:to-blue-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
               <CardContent className="p-6 md:p-8 relative z-10 flex flex-col items-center text-center">
                 <motion.div
@@ -199,33 +259,17 @@ export default function LandingPage() {
 
             {/* Doctor Link beneath the card */}
             <motion.div variants={fadeUp} className="mt-8 text-center bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm py-4 px-6 rounded-2xl border border-slate-200 dark:border-slate-800 inline-block shadow-sm">
-              <p className="text-base md:text-lg text-slate-700 dark:text-slate-300 font-medium">
-                Are you a healthcare professional?{' '}
-                <Link to="/doctor/login" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-bold hover:underline transition-all underline-offset-4">
-                  Access Doctor Dashboard →
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-base md:text-lg text-slate-700 dark:text-slate-300 font-medium">
+                <span>Are you a healthcare professional?</span>
+                <Link to="/doctor/login" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-bold hover:underline transition-all underline-offset-4 flex items-center group whitespace-nowrap">
+                  Access Doctor Dashboard <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                 </Link>
-              </p>
+              </div>
             </motion.div>
           </motion.div>
         </motion.div>
 
-        {/* Animated ECG line */}
-        <motion.div
-          initial={{ opacity: 0, scaleX: 0 }}
-          animate={{ opacity: 1, scaleX: 1 }}
-          transition={{ delay: 0.8, duration: 1.2, ease: 'easeOut' }}
-          className="mt-16 flex items-center justify-center gap-2 text-slate-400 dark:text-slate-600"
-        >
-          <div className="h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent flex-1 max-w-24" />
-          <motion.div
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="text-xs text-slate-500 dark:text-slate-500"
-          >
-            ♥ HIPAA Compliant · Evidence-Based · Real-Time Analysis
-          </motion.div>
-          <div className="h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent flex-1 max-w-24" />
-        </motion.div>
+        <Marquee />
       </motion.section>
 
       {/* Stats */}
@@ -267,14 +311,14 @@ export default function LandingPage() {
           variants={stagger}
         >
           <motion.div variants={fadeUp} className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Free for Patients</h3>
+            <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">AI for Patients</h3>
             <p className="text-slate-600 dark:text-slate-400">Get instant AI-powered health analysis at no cost</p>
           </motion.div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {patientFeatures.map((feature, i) => (
               <motion.div
                 key={i} variants={fadeUp}
-                whileHover={{ y: -8, transition: { duration: 0.2 } }}
+                whileHover={{ y: -10, scale: 1.03, transition: { type: 'spring', stiffness: 300, damping: 18 } }}
                 className="relative group h-full"
               >
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-xl overflow-hidden blur-2xl z-0">
@@ -317,7 +361,7 @@ export default function LandingPage() {
             {doctorFeatures.map((feature, i) => (
               <motion.div
                 key={i} variants={fadeUp}
-                whileHover={{ y: -8, transition: { duration: 0.2 } }}
+                whileHover={{ y: -10, scale: 1.03, transition: { type: 'spring', stiffness: 300, damping: 18 } }}
                 className="relative group h-full"
               >
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-xl overflow-hidden blur-2xl z-0">

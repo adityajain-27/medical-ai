@@ -2,10 +2,16 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { Zap, Star, Rocket, CheckCircle, Loader2, Coins } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
-import { getCredits, buyCredits } from '../services/api';
+import { Zap, Star, Rocket, CheckCircle, Loader2, Coins, ArrowLeft } from 'lucide-react';
+import { useCredits } from '../hooks/useCredits';
 import { toast } from 'sonner';
+import { Link } from 'react-router';
+
+const PACKAGES = [
+    { id: 'starter', credits: 300, price: 99, label: 'Starter' },
+    { id: 'standard', credits: 750, price: 249, label: 'Standard' },
+    { id: 'pro', credits: 1500, price: 499, label: 'Pro' },
+];
 
 const PACKAGE_ICONS = { starter: Zap, standard: Star, pro: Rocket };
 const PACKAGE_COLORS = {
@@ -14,32 +20,17 @@ const PACKAGE_COLORS = {
     pro: 'from-purple-500 to-pink-500',
 };
 
-interface CreditPackage { id: string; credits: number; price: number; label: string; }
-
 export default function BuyCreditsPage() {
-    const { token } = useAuth();
-    const [balance, setBalance] = useState<number | null>(null);
-    const [packages, setPackages] = useState<CreditPackage[]>([]);
+    const { credits, addCredits, loading } = useCredits();
     const [buying, setBuying] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (!token) return;
-        getCredits(token)
-            .then(data => { setBalance(data.credits); setPackages(data.packages); })
-            .catch(console.error)
-            .finally(() => setLoading(false));
-    }, [token]);
-
-    const handleBuy = async (pkg: CreditPackage) => {
-        if (!token) return;
+    const handleBuy = async (pkg: typeof PACKAGES[0]) => {
         setBuying(pkg.id);
         try {
-            const result = await buyCredits(token, pkg.id);
-            setBalance(result.credits);
+            const result = await addCredits(pkg.id);
             toast.success(`✅ ${result.added} credits added! New balance: ${result.credits}`);
         } catch (err: any) {
-            toast.error(err.message || 'Purchase failed');
+            toast.error(err.message || 'Purchase failed. Please make sure you are logged in.');
         } finally {
             setBuying(null);
         }
@@ -54,10 +45,20 @@ export default function BuyCreditsPage() {
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-900 p-6">
             <div className="max-w-4xl mx-auto space-y-8">
+                <div className="flex items-center justify-between">
+                    <Link to="/patient/symptom">
+                        <Button variant="ghost" size="sm" className="gap-2">
+                            <ArrowLeft className="w-4 h-4" />
+                            Back to Analysis
+                        </Button>
+                    </Link>
+                </div>
+
                 <div className="text-center">
                     <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Buy Credits</h1>
                     <p className="text-slate-600 dark:text-slate-400">Each AI health assessment costs <strong>150 credits</strong></p>
                 </div>
+
                 <Card className="border-2 border-teal-200 dark:border-teal-800 bg-gradient-to-r from-teal-50 to-blue-50 dark:from-teal-950/40 dark:to-blue-950/40">
                     <CardContent className="p-6 flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -66,18 +67,19 @@ export default function BuyCreditsPage() {
                             </div>
                             <div>
                                 <p className="text-sm text-slate-600 dark:text-slate-400">Your current balance</p>
-                                <p className="text-4xl font-bold text-slate-900 dark:text-white">{balance ?? '—'}</p>
+                                <p className="text-4xl font-bold text-slate-900 dark:text-white">{credits ?? '—'}</p>
                                 <p className="text-sm text-slate-500 mt-0.5">credits</p>
                             </div>
                         </div>
                         <div className="text-right">
                             <p className="text-sm text-slate-600 dark:text-slate-400">Reports remaining</p>
                             <p className="text-3xl font-bold text-teal-600 dark:text-teal-400">
-                                {balance !== null ? Math.floor(balance / 150) : '—'}
+                                {credits !== null ? Math.floor(credits / 150) : '—'}
                             </p>
                         </div>
                     </CardContent>
                 </Card>
+
                 <div className="grid grid-cols-3 gap-4 text-center">
                     {[
                         { label: '500 credits', sub: 'Given on signup', color: 'text-green-600 dark:text-green-400' },
@@ -90,8 +92,9 @@ export default function BuyCreditsPage() {
                         </div>
                     ))}
                 </div>
+
                 <div className="grid md:grid-cols-3 gap-6">
-                    {packages.map(pkg => {
+                    {PACKAGES.map(pkg => {
                         const Icon = PACKAGE_ICONS[pkg.id as keyof typeof PACKAGE_ICONS] || Zap;
                         const gradient = PACKAGE_COLORS[pkg.id as keyof typeof PACKAGE_COLORS] || 'from-blue-500 to-teal-500';
                         const isPopular = pkg.id === 'standard';
@@ -121,9 +124,14 @@ export default function BuyCreditsPage() {
                                             <CheckCircle className="w-4 h-4 text-teal-500 flex-shrink-0" />Never expires
                                         </li>
                                     </ul>
-                                    <Button className={`w-full bg-gradient-to-r ${gradient} hover:opacity-90 text-white border-0`}
-                                        onClick={() => handleBuy(pkg)} disabled={buying !== null}>
-                                        {buying === pkg.id ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</> : `Buy ${pkg.credits} Credits`}
+                                    <Button
+                                        className={`w-full bg-gradient-to-r ${gradient} hover:opacity-90 text-white border-0`}
+                                        onClick={() => handleBuy(pkg)}
+                                        disabled={buying !== null}
+                                    >
+                                        {buying === pkg.id
+                                            ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</>
+                                            : `Buy ${pkg.credits} Credits`}
                                     </Button>
                                 </CardContent>
                             </Card>
