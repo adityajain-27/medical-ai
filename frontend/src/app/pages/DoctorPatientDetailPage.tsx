@@ -11,7 +11,7 @@ import { Slider } from '../components/ui/slider';
 import {
   ArrowLeft, FileText, AlertTriangle, Loader2,
   Activity, Brain, Zap, User, Phone, Mail, Calendar,
-  Droplets, Camera, Plus, X, ChevronDown, ChevronUp
+  Droplets, Camera, Plus, X, ChevronDown, ChevronUp, Send
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -64,6 +64,7 @@ export default function DoctorPatientDetailPage() {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [showAnalyze, setShowAnalyze] = useState(false);
   const [showHistory, setShowHistory] = useState(true);
+  const [sendingIntake, setSendingIntake] = useState(false);
 
   // Analysis form state
   const [symptoms, setSymptoms] = useState('');
@@ -162,6 +163,25 @@ export default function DoctorPatientDetailPage() {
     }
   };
 
+  const handleSendIntake = async () => {
+    if (!patient?.email) { toast.error('This patient has no email address on file.'); return; }
+    setSendingIntake(true);
+    try {
+      const res = await fetch(`${NODE_BASE_URL}/api/intake/send`, {
+        method: 'POST',
+        headers: authHeaders(token!),
+        body: JSON.stringify({ patientId: patient._id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      toast.success(`✅ Intake form sent to ${patient.email}`);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to send intake form');
+    } finally {
+      setSendingIntake(false);
+    }
+  };
+
   if (loading) return (
     <DashboardLayout>
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -203,6 +223,16 @@ export default function DoctorPatientDetailPage() {
           >
             <Brain className="w-4 h-4 mr-2" />
             {showAnalyze ? 'Cancel' : 'Run AI Analysis'}
+          </Button>
+          <Button
+            variant="outline"
+            className="border-sky-300 text-sky-600 hover:bg-sky-50"
+            onClick={handleSendIntake}
+            disabled={sendingIntake || !patient.email}
+            title={!patient.email ? 'Add an email address to this patient first' : 'Send intake form via email'}
+          >
+            {sendingIntake ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+            {sendingIntake ? 'Sending…' : 'Send Intake Form'}
           </Button>
         </div>
 

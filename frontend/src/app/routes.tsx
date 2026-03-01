@@ -24,6 +24,7 @@ import DoctorSettingsPage from './pages/DoctorSettingsPage';
 import DoctorLoginPage from './pages/DoctorLoginPage';
 import DoctorRegisterPage from './pages/DoctorRegisterPage';
 import BuyCreditsPage from './pages/BuyCreditsPage';
+import PatientIntakePage from './pages/PatientIntakePage';
 
 import LandingPage from './pages/LandingPage';
 import SymptomInputPage from './pages/SymptomInputPage';
@@ -75,6 +76,11 @@ export const router = createBrowserRouter([
       {
         path: '/contact',
         element: <ContactPage />,
+      },
+
+      {
+        path: '/intake/:token',
+        element: <PatientIntakePage />,
       },
 
       {
