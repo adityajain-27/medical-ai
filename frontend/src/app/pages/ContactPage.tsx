@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 const teamMembers = [
     {
         name: "Aditya Jain",
-        email: "aditya.jain_cs.h25@gla.ac.in",
+        email: "adityaalba27@gmail.com",
         linkedin: "https://www.linkedin.com/in/aditya-jain-32b310371/",
     },
     {
