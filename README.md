@@ -311,7 +311,6 @@ Built at **[Hackathon Name]** — 🥈 2nd Place
 | **Sweety** | Frontend development · UI design · Testing & QA | [@Sweety3106](https://github.com/Sweety3106) |
 | **Hardik Agrawal** | Frontend development · UI design · Testing & QA | [@hardik-username](https://github.com/hardik-agrawal10) |
 
-- GitHub (Lead): [@adityajain-27](https://github.com/adityajain-27)
 
 ---
 
