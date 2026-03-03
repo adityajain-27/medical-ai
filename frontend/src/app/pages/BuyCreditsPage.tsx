@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { Zap, Star, Rocket, CheckCircle, Loader2, Coins, ArrowLeft } from 'lucide-react';
+import { Zap, Star, Rocket, CheckCircle, Loader2, Coins, ArrowLeft, Clock } from 'lucide-react';
 import { useCredits } from '../hooks/useCredits';
 import { toast } from 'sonner';
 import { Link } from 'react-router';
@@ -24,16 +24,8 @@ export default function BuyCreditsPage() {
     const { credits, addCredits, loading } = useCredits();
     const [buying, setBuying] = useState<string | null>(null);
 
-    const handleBuy = async (pkg: typeof PACKAGES[0]) => {
-        setBuying(pkg.id);
-        try {
-            const result = await addCredits(pkg.id);
-            toast.success(`✅ ${result.added} credits added! New balance: ${result.credits}`);
-        } catch (err: any) {
-            toast.error(err.message || 'Purchase failed. Please make sure you are logged in.');
-        } finally {
-            setBuying(null);
-        }
+    const handleBuy = () => {
+        toast.info('Payment integration coming soon! Credits will be purchasable here once the platform launches.');
     };
 
     if (loading) return (
@@ -57,6 +49,15 @@ export default function BuyCreditsPage() {
                 <div className="text-center">
                     <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Buy Credits</h1>
                     <p className="text-slate-600 dark:text-slate-400">Each AI health assessment costs <strong>150 credits</strong></p>
+                </div>
+
+                {/* Coming Soon Banner */}
+                <div className="flex items-center gap-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl px-5 py-4">
+                    <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+                    <div>
+                        <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">Payment integration coming soon</p>
+                        <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">Credit purchasing will be enabled at public launch. You currently start with 500 free credits on signup.</p>
+                    </div>
                 </div>
 
                 <Card className="border-2 border-teal-200 dark:border-teal-800 bg-gradient-to-r from-teal-50 to-blue-50 dark:from-teal-950/40 dark:to-blue-950/40">
@@ -125,20 +126,18 @@ export default function BuyCreditsPage() {
                                         </li>
                                     </ul>
                                     <Button
-                                        className={`w-full bg-gradient-to-r ${gradient} hover:opacity-90 text-white border-0`}
-                                        onClick={() => handleBuy(pkg)}
-                                        disabled={buying !== null}
+                                        className="w-full bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500 border-0 cursor-not-allowed"
+                                        onClick={handleBuy}
+                                        disabled
                                     >
-                                        {buying === pkg.id
-                                            ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</>
-                                            : `Buy ${pkg.credits} Credits`}
+                                        <Clock className="w-4 h-4 mr-2" /> Coming Soon
                                     </Button>
                                 </CardContent>
                             </Card>
                         );
                     })}
                 </div>
-                <p className="text-center text-xs text-slate-400">🔒 Secure payments · Credits are added instantly</p>
+                <p className="text-center text-xs text-slate-400">🔒 Secure payments · Payment gateway integration in progress</p>
             </div>
         </div>
     );
