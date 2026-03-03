@@ -137,13 +137,13 @@ export default function RegisterPage() {
                 <input type="checkbox" required className="mt-1 rounded" />
                 <span className="text-slate-600 dark:text-slate-400">
                   I agree to the{' '}
-                  <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline">
+                  <Link to="/terms" target="_blank" className="text-blue-600 dark:text-blue-400 hover:underline">
                     Terms of Service
-                  </a>{' '}
+                  </Link>{' '}
                   and{' '}
-                  <a href="#" className="text-blue-600 dark:text-blue-400 hover:underline">
+                  <Link to="/privacy" target="_blank" className="text-blue-600 dark:text-blue-400 hover:underline">
                     Privacy Policy
-                  </a>
+                  </Link>
                 </span>
               </div>
 

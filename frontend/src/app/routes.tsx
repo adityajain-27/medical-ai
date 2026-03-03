@@ -24,6 +24,8 @@ import DoctorLoginPage from './pages/DoctorLoginPage';
 import DoctorRegisterPage from './pages/DoctorRegisterPage';
 import BuyCreditsPage from './pages/BuyCreditsPage';
 import PatientIntakePage from './pages/PatientIntakePage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
 
 import LandingPage from './pages/LandingPage';
 import SymptomInputPage from './pages/SymptomInputPage';
@@ -78,6 +80,16 @@ export const router = createBrowserRouter([
       {
         path: '/intake/:token',
         element: <PatientIntakePage />,
+      },
+
+      {
+        path: '/terms',
+        element: <TermsPage />,
+      },
+
+      {
+        path: '/privacy',
+        element: <PrivacyPage />,
       },
 
       {
