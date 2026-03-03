@@ -23,22 +23,15 @@ A full-stack health assessment platform that enables doctors to run AI-powered t
 
 ## ✨ Features
 
-### Doctor Account
-- **Sign Up / Login** — Doctors register with their name, email, position, and qualification; authenticated via JWT
-- **500 Free Credits on Sign Up** — Every new doctor account starts with 500 AI credits, enough to run multiple assessments right away
-- **Credit-based Report Generation** — Each AI assessment consumes credits; doctors can top up via the in-app billing page (Razorpay)
+### Patient Account & Intake
+- **Credit-based Assessment** — Patients receive 500 AI credits upon registration, which are consumed out to run their assessments using our AI system (No actual payment integration required to start)
+Smart Intake Form — Mobile-friendly, branded form accessible via email link; optionally runs independent of doctor integration
+- **Image Upload System** — Attach a photo of a rash, wound, or eye for visual AI analysis
 
-### Doctor Dashboard
-- **AI Assessment** — Enter symptoms, medications, and optionally upload an image; the AI returns a triage colour, SOAP note, differential diagnosis with ICD-10 codes, drug interaction warnings, and red flags
-- **Patient Management** — Add and manage a patient list with demographics, medical history, and allergies
-- **Assessment History** — Browse all past AI reports per patient with full output preserved
-- **Patient Intake via Email** — Send a secure, tokenised link to the patient's email; once they fill it in, the AI runs automatically and the report lands in the doctor's dashboard
-- **Medical Chatbot** — Conversational assistant for general clinical questions
-- **Billing** — Purchase additional credits via Razorpay
-
-### Patient Experience
-- **Smart Intake Form** — Mobile-friendly, branded form accessible via email link (no login required); expires after 7 days
-- **Image Upload** — Attach a photo of a rash, wound, or eye for visual AI analysis
+### Doctor Portal
+- **Assessment Management** — Review and analyze AI-assessed triage colors natively alongside generated SOAP note reports, differential diagnosis ICD-10 codes, and drug interaction warnings
+- **Add Patients** — Build your patient list natively to allow simple integration natively
+- **Assessment History** — Browse all past generated AI reports per patient with full output preserved seamlessly
 
 ### AI Capabilities
 - **Triage Classification** — RED (emergency) / YELLOW (urgent) / GREEN (self-care) with numeric urgency score and clinical reasoning
@@ -47,6 +40,7 @@ A full-stack health assessment platform that enables doctors to run AI-powered t
 - **Follow-up Questions** — OPQRST-guided clarifying questions generated dynamically based on presenting symptoms
 - **Drug Interaction Checking** — OpenFDA data cross-referenced with LLM synthesis; severity-ranked (Minor / Moderate / Major)
 - **Vision Analysis** — Patient photos analysed by Claude Vision; findings injected into the full assessment
+- **Medical Chatbot** — Conversational assistant for general clinical questions
 
 ---
 
