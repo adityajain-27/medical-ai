@@ -1,17 +1,7 @@
 import express from 'express';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 const router = express.Router();
-
-function createTransporter() {
-    return nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-        },
-    });
-}
 
 router.post('/', async (req, res) => {
     try {
@@ -20,10 +10,11 @@ router.post('/', async (req, res) => {
             return res.status(400).json({ message: 'Name, email and message are required.' });
         }
 
-        const transporter = createTransporter();
-        await transporter.sendMail({
-            from: `"Nirog AI Contact Form" <${process.env.EMAIL_USER}>`,
-            to: process.env.EMAIL_USER,
+        const resend = new Resend(process.env.RESEND_API_KEY);
+
+        await resend.emails.send({
+            from: 'Nirog AI <onboarding@resend.dev>',
+            to: [process.env.CONTACT_EMAIL || 'niroghealthai@gmail.com'],
             replyTo: email,
             subject: `[Nirog AI Contact] ${subject || 'New message from ' + firstName}`,
             html: `

@@ -1,5 +1,5 @@
 import express from 'express';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import verifyToken from '../middlewares/auth.js';
 import IntakeRequest from '../models/intakeRequest.js';
 import DoctorPatient from '../models/doctorPatient.js';
@@ -8,18 +8,12 @@ const router = express.Router();
 const PYTHON_AI_URL = process.env.PYTHON_AI_URL || 'http://localhost:8000';
 const APP_URL = process.env.APP_URL || 'http://localhost:5173';
 
-function createTransporter() {
-    return nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-        },
-    });
+function createResend() {
+  return new Resend(process.env.RESEND_API_KEY);
 }
 
 function buildEmailHtml(patientName, doctorName, intakeUrl) {
-    return `
+  return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -103,130 +97,130 @@ function buildEmailHtml(patientName, doctorName, intakeUrl) {
 
 // POST /api/intake/send — doctor sends intake form to patient email
 router.post('/send', verifyToken, async (req, res) => {
-    try {
-        const { patientId } = req.body;
-        if (!patientId) return res.status(400).json({ message: 'patientId is required' });
+  try {
+    const { patientId } = req.body;
+    if (!patientId) return res.status(400).json({ message: 'patientId is required' });
 
-        const patient = await DoctorPatient.findOne({ _id: patientId, doctorId: req.user.id });
-        if (!patient) return res.status(404).json({ message: 'Patient not found' });
-        if (!patient.email) return res.status(400).json({ message: 'Patient has no email address on file.' });
+    const patient = await DoctorPatient.findOne({ _id: patientId, doctorId: req.user.id });
+    if (!patient) return res.status(404).json({ message: 'Patient not found' });
+    if (!patient.email) return res.status(400).json({ message: 'Patient has no email address on file.' });
 
-        // Create intake token
-        const intake = await IntakeRequest.create({
-            patientId: patient._id,
-            doctorId: req.user.id,
-        });
+    // Create intake token
+    const intake = await IntakeRequest.create({
+      patientId: patient._id,
+      doctorId: req.user.id,
+    });
 
-        const intakeUrl = `${APP_URL}/intake/${intake.token}`;
-        const doctorName = req.user.name || 'Your Doctor';
+    const intakeUrl = `${APP_URL}/intake/${intake.token}`;
+    const doctorName = req.user.name || 'Your Doctor';
 
-        // Send email
-        const transporter = createTransporter();
-        await transporter.sendMail({
-            from: `"Nirog AI" <${process.env.EMAIL_USER}>`,
-            to: patient.email,
-            subject: `${doctorName} has requested your health assessment — Nirog AI`,
-            html: buildEmailHtml(patient.name, doctorName, intakeUrl),
-        });
+    // Send email via Resend
+    const resend = createResend();
+    await resend.emails.send({
+      from: 'Nirog AI <onboarding@resend.dev>',
+      to: [patient.email],
+      subject: `${doctorName} has requested your health assessment — Nirog AI`,
+      html: buildEmailHtml(patient.name, doctorName, intakeUrl),
+    });
 
-        res.json({ message: `Intake form sent to ${patient.email}`, token: intake.token });
-    } catch (err) {
-        console.error('Intake send error:', err);
-        res.status(500).json({ message: err.message || 'Failed to send intake form' });
-    }
+    res.json({ message: `Intake form sent to ${patient.email}`, token: intake.token });
+  } catch (err) {
+    console.error('Intake send error:', err);
+    res.status(500).json({ message: err.message || 'Failed to send intake form' });
+  }
 });
 
 // GET /api/intake/:token — public, patient fetches their form info
 router.get('/:token', async (req, res) => {
-    try {
-        const intake = await IntakeRequest.findOne({ token: req.params.token })
-            .populate('patientId', 'name age gender')
-            .populate('doctorId', 'name');
+  try {
+    const intake = await IntakeRequest.findOne({ token: req.params.token })
+      .populate('patientId', 'name age gender')
+      .populate('doctorId', 'name');
 
-        if (!intake) return res.status(404).json({ message: 'Intake link not found or expired.' });
-        if (intake.status === 'completed') return res.status(410).json({ message: 'This intake form has already been submitted.' });
-        if (new Date() > intake.expiresAt) return res.status(410).json({ message: 'This intake link has expired.' });
+    if (!intake) return res.status(404).json({ message: 'Intake link not found or expired.' });
+    if (intake.status === 'completed') return res.status(410).json({ message: 'This intake form has already been submitted.' });
+    if (new Date() > intake.expiresAt) return res.status(410).json({ message: 'This intake link has expired.' });
 
-        res.json({
-            patientName: intake.patientId?.name,
-            patientAge: intake.patientId?.age,
-            patientGender: intake.patientId?.gender,
-            doctorName: intake.doctorId?.name,
-            expiresAt: intake.expiresAt,
-        });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
+    res.json({
+      patientName: intake.patientId?.name,
+      patientAge: intake.patientId?.age,
+      patientGender: intake.patientId?.gender,
+      doctorName: intake.doctorId?.name,
+      expiresAt: intake.expiresAt,
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
 // POST /api/intake/:token/submit — public, patient submits symptoms → AI → saved to doctor's record
 router.post('/:token/submit', async (req, res) => {
-    try {
-        const intake = await IntakeRequest.findOne({ token: req.params.token })
-            .populate('patientId')
-            .populate('doctorId', 'name _id');
+  try {
+    const intake = await IntakeRequest.findOne({ token: req.params.token })
+      .populate('patientId')
+      .populate('doctorId', 'name _id');
 
-        if (!intake) return res.status(404).json({ message: 'Intake link not found.' });
-        if (intake.status === 'completed') return res.status(410).json({ message: 'Already submitted.' });
-        if (new Date() > intake.expiresAt) return res.status(410).json({ message: 'Link expired.' });
+    if (!intake) return res.status(404).json({ message: 'Intake link not found.' });
+    if (intake.status === 'completed') return res.status(410).json({ message: 'Already submitted.' });
+    if (new Date() > intake.expiresAt) return res.status(410).json({ message: 'Link expired.' });
 
-        const { symptoms, medications = [], followup_answers = {} } = req.body;
-        if (!symptoms?.trim()) return res.status(400).json({ message: 'Symptoms are required.' });
+    const { symptoms, medications = [], followup_answers = {} } = req.body;
+    if (!symptoms?.trim()) return res.status(400).json({ message: 'Symptoms are required.' });
 
-        const patient = intake.patientId;
+    const patient = intake.patientId;
 
-        // Build context-aware symptoms (same as doctor.js does)
-        const contextSymptoms = `Patient: ${patient.gender}, Age ${patient.age}. ${symptoms}${patient.medicalHistory ? ` Medical history: ${patient.medicalHistory}.` : ''}${patient.allergies ? ` Allergies: ${patient.allergies}.` : ''}`;
-        const allMeds = [...medications, ...(patient.currentMedications || [])];
+    // Build context-aware symptoms (same as doctor.js does)
+    const contextSymptoms = `Patient: ${patient.gender}, Age ${patient.age}. ${symptoms}${patient.medicalHistory ? ` Medical history: ${patient.medicalHistory}.` : ''}${patient.allergies ? ` Allergies: ${patient.allergies}.` : ''}`;
+    const allMeds = [...medications, ...(patient.currentMedications || [])];
 
-        // Call Python AI server
-        const aiResponse = await fetch(`${PYTHON_AI_URL}/assess`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ symptoms: contextSymptoms, medications: allMeds, followup_answers }),
-        });
+    // Call Python AI server
+    const aiResponse = await fetch(`${PYTHON_AI_URL}/assess`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ symptoms: contextSymptoms, medications: allMeds, followup_answers }),
+    });
 
-        if (!aiResponse.ok) {
-            const errText = await aiResponse.text();
-            return res.status(502).json({ message: 'AI service error', detail: errText });
-        }
-
-        const result = await aiResponse.json();
-
-        // Import Assessment model
-        const { default: Assessment } = await import('../models/assessment.js');
-
-        await Assessment.create({
-            userId: intake.doctorId._id,
-            doctorPatientId: patient._id,
-            symptoms: contextSymptoms,
-            medications: allMeds,
-            triage: {
-                color: result.triage?.color,
-                urgency_score: result.triage?.urgency_score,
-                label: result.triage?.label,
-                reason: result.triage?.reason,
-            },
-            followupAnswers: followup_answers,
-            soapNote: result.soap_note,
-            conditions: result.conditions,
-            drugInteractions: result.drug_interactions,
-            redFlags: result.red_flags,
-        });
-
-        await DoctorPatient.findByIdAndUpdate(patient._id, {
-            $inc: { totalAnalyses: 1 },
-            lastAnalysisAt: new Date(),
-        });
-
-        intake.status = 'completed';
-        await intake.save();
-
-        res.json({ message: 'Assessment complete! Your doctor has been notified.' });
-    } catch (err) {
-        console.error('Intake submit error:', err);
-        res.status(500).json({ message: err.message });
+    if (!aiResponse.ok) {
+      const errText = await aiResponse.text();
+      return res.status(502).json({ message: 'AI service error', detail: errText });
     }
+
+    const result = await aiResponse.json();
+
+    // Import Assessment model
+    const { default: Assessment } = await import('../models/assessment.js');
+
+    await Assessment.create({
+      userId: intake.doctorId._id,
+      doctorPatientId: patient._id,
+      symptoms: contextSymptoms,
+      medications: allMeds,
+      triage: {
+        color: result.triage?.color,
+        urgency_score: result.triage?.urgency_score,
+        label: result.triage?.label,
+        reason: result.triage?.reason,
+      },
+      followupAnswers: followup_answers,
+      soapNote: result.soap_note,
+      conditions: result.conditions,
+      drugInteractions: result.drug_interactions,
+      redFlags: result.red_flags,
+    });
+
+    await DoctorPatient.findByIdAndUpdate(patient._id, {
+      $inc: { totalAnalyses: 1 },
+      lastAnalysisAt: new Date(),
+    });
+
+    intake.status = 'completed';
+    await intake.save();
+
+    res.json({ message: 'Assessment complete! Your doctor has been notified.' });
+  } catch (err) {
+    console.error('Intake submit error:', err);
+    res.status(500).json({ message: err.message });
+  }
 });
 
 export default router;
